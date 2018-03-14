@@ -53,9 +53,17 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                                                  plotlyOutput("nwcaCondBoxRegion"),
                                                                  h3("Conductivity by Ecoregion and State"),
                                                                  plotlyOutput("nwcaCondBoxGroup"))),
+                                                 tabPanel("Bar Plots",
+                                                          column(12,
+                                                                 h3("Mean Conductivity by Region"),
+                                                                 plotlyOutput("nwcaCondBarRegion"),
+                                                                 br(),
+                                                                 h3("Mean Conductivity by State"),
+                                                                 plotlyOutput("nwcaCondBarState"))),
                                                  tabPanel("Histograms",
-                                                          column(12, 
-                                                                 plotlyOutput("nwcaCondHist")))
+                                                          
+                                                          column(12,
+                                                                 h3("Average Conductivity")))
                                                ))),
                                       tabPanel("pH"),
                                       tabPanel("Total Nitrogen"),
@@ -87,9 +95,16 @@ server <- function(input, output) {
       layout(boxmode = "group")
   })
   
-  output$nwcaCondHist <- renderPlotly({
-    p <- plot_ly(nwcaChem, x = COND, type = "histogram")
+  output$nwcaCondBarRegion <- renderPlotly({
+    meanCondRegion <- aggregate(nwcaChem$COND, list(region = nwcaChem$REGION), mean, na.rm=TRUE)
+    p <- plot_ly(x = meanCondRegion$region, y = meanCondRegion$x, type = "bar")
   })
+  
+  output$nwcaCondBarState <- renderPlotly({
+    meanCondState <- aggregate(nwcaChem$COND, list(state = nwcaChem$STATE), mean, na.rm=TRUE)
+    p <- plot_ly(x = meanCondState$state, y = meanCondState$x, type = "bar")
+  })
+  
   
   output$nwcaMap <- renderPlotly({
     nwcaChem$q <- with(df, cut(input$analyte, quantile(input$analyte)))
